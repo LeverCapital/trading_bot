@@ -6,6 +6,7 @@ Created on Sat May 14 01:25:32 2022
 @author: pranav.atulya
 """
 
+###################################################################################
 # Basic Initial strat
 # Indicators used: Bollinger bands, MACD, Simple moving average, OLS regression channel 
 # Data feed: Close price, period: last 1 month, interval: 5min(primary), 1min(confirmation) (May change later based on backtest results)
@@ -15,15 +16,26 @@ Created on Sat May 14 01:25:32 2022
 
 # strat1 takes two dataframes, one for each interval(primary and confirmation); 
 # It requires the dataframes to have the close price and all the indicator values as separate columns
+###################################################################################
 
-def strat1(price_primary, price_confirmation, i):
-    macd_mean = price_primary['signal_line'].mean()
-    macd_dev = price_primary['signal_line'].std()
+def strat1(bt_df, i):
     
-    if(price_primary['SMA50'][i] > price_primary['Upper Band'][i] and price_primary['signal_line'][i] < price_primary['MACD_mean'][i]-1*price_primary['MACD_dev'][i]):
+    macd_mean = bt_df['signal_line'].mean() # Assumes that the MACD values stay in a given range for each asset
+    macd_std = bt_df['signal_line'].std()
+    
+    if(bt_df['SMA50_p'][i] > bt_df['Upper Band'][i] and bt_df['signal_line'][i] < macd_mean-1*macd_std):
         
-        if(price_confirmation['SMA50'][-(i*5)] < price_confirmation['Close'][-(i*5)]):
-            return True
+        if(bt_df['SMA50_s'][i] < bt_df['Close_s'][i]):
+            return "golong"
+        else:
+            pass
+    else:
+        pass
+    
+    if(bt_df['SMA50_p'][i] < bt_df['Lower Band'][i] and bt_df['signal_line'][i] > macd_mean+1*macd_std):
+        
+        if(bt_df['SMA50_s'][i] > bt_df['Close_s'][i]):
+            return "goshort"
         else:
             return False
     else:

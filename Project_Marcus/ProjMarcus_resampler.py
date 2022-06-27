@@ -43,13 +43,19 @@ def resampler(asset, period_primary, interval_primary, period_secondary, interva
 # Add indicators
     df1 = getSMA(df1)
     df1 = getBollingerBands(df1)
+    df1 = getMACD(df1)
 
     df2 = getSMA(df2)
-    df2 = getBollingerBands(df2)
     
+    
+    
+# Left join and merge dataframes    
     df_resampled = pd.merge(df1, df2, how = 'left', on = 'Datetime', suffixes = ('_p', '_s'))
+    # df_resampled['index'] = [i for i in range(0,len(df_resampled))]
+    # df_resampled.set_index('index', drop = False, inplace = True)
+    
 
     return df_resampled
 
 
-print(resampler(asset, period_primary, interval_primary, period_secondary, interval_secondary))
+# print(resampler(asset, period_primary, interval_primary, period_secondary, interval_secondary))
