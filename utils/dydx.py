@@ -6,7 +6,6 @@ from web3 import Web3
 import time
 
 
-
 def setup_dydx():
     load_dotenv()
     # My Account 2 metamask address
@@ -29,6 +28,7 @@ def setup_dydx():
     client.stark_private_key = stark_private_key
 
     return client
+
 
 def go_long(client, amount, stop_loss, roi):
     # Get our position ID.
@@ -95,8 +95,10 @@ def go_long(client, amount, stop_loss, roi):
         "take_profit_order": take_profit_order
     }
 
+
 def get_stop_limit_price(sell_price, stop_loss):
     return float(sell_price) * (1 + (stop_loss/100))
+
 
 def go_short(client, amount, stop_loss, roi):
     # Get our position ID.
@@ -116,7 +118,8 @@ def go_short(client, amount, stop_loss, roi):
         'order_type': consts.ORDER_TYPE_MARKET,
         'post_only': False,
         'size': str(amount),
-        'price': '%.1f' % (float(sell_price) - slippage),  # Lowest possible sell price with slippage included 
+        # Lowest possible sell price with slippage included
+        'price': '%.1f' % (float(sell_price) - slippage),
         'expiration_epoch_seconds': time.time() + 15000,
         'time_in_force': consts.TIME_IN_FORCE_FOK,
         'limit_fee': '0.015',
@@ -159,6 +162,7 @@ def go_short(client, amount, stop_loss, roi):
         "stop_loss_order": stoploss_order,
         "take_profit_order": take_profit_order
     }
+
 
 def check_if_pending(orders, dydx_client):
     # GEt current active orders
@@ -208,7 +212,7 @@ def check_if_pending(orders, dydx_client):
                     order_id=orders['stop_loss_order']['order']['id'])
                 dydx_client.private.cancel_order(
                     order_id=orders['take_profit_order']['order']['id'])
-                # clear out the long position too
+                # TODO: Clear out the current position too
                 dydx_client.private.cancel_order(
                     order_id=orders['market_buy_order']['order']['id'])
             except:
@@ -227,7 +231,23 @@ def check_if_pending(orders, dydx_client):
         return False
 
 
+def any_active_trades(dydx_client):
+    # Check if there is an active buy or sell order (Not stop loss or take profit)
+    # If yes, make sure brackets are set
+    # Then return true
+    market_side_orders = client.private.get_active_orders(
+        market=consts.MARKET_ETH_USD,
+    )
+    print(market_side_orders)
+
+    # Check if there is an active position
+    # If yes, make sure brackets are set
+    # If brackets not set, close position immediately
+    # If no position
+    # Then return false
+
 
 if __name__ == "__main__":
     client = setup_dydx()
     go_short(client, amount=0.01, stop_loss=1, roi=1)
+    print(any_active_trades())
